@@ -17,6 +17,10 @@ steps:
   displayName: "NuGet use 4.6.2"
   inputs:
     versionSpec: 4.6.2
+# Install Nodejs    
+- task: NodeTool@0
+  inputs:
+    versionSpec: '7.x'     
 
 # Restore NuGet packages
 
