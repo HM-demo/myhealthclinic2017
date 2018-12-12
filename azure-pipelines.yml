@@ -10,14 +10,45 @@ variables:
   buildConfiguration: 'Release'
 
 steps:
-- script: dotnet build MHC_ASPNetCore.sln --configuration $(buildConfiguration)
-- script: dir
-  displayName: 'dotnet publish'
-- task: CopyFiles@2
+
+# Download the latest recommended NuGet exe
+
+- task: NuGetToolInstaller@0
+  displayName: "NuGet use 4.6.2"
   inputs:
-    contents: dist\**
-    targetFolder: $(Build.ArtifactStagingDirectory)
+    versionSpec: 4.6.2
+
+# Restore NuGet packages
+
+- task: NuGetCommand@2
+  displayName: "NuGet Restore"
+  inputs:
+    restoreSolution: 'MHC_ASPNetCore.sln'
+    feedsToUse: config
+    nugetConfigPath: NuGet.config # you should always have a NuGet.config file!
+
+# Build your .NET Core project (but avoid restore your packages again)
+
+- task: DotNetCoreCLI@2
+  displayName: ".NET build"
+  inputs:
+    projects: 'MHC_ASPNetCore.sln'
+    arguments: --configuration $(BuildConfiguration) --no-restore
+
+
+# Create the deployment package for your web project
+
+- task: DotNetCoreCLI@2
+  displayName: ".NET publish package"
+  inputs:
+    command: publish
+    arguments: '--configuration $(BuildConfiguration) --no-restore --output $(Build.ArtifactStagingDirectory)/app/pkg'
+
+# Publish your web project deployment packages as named artifact 'app'
+
 - task: PublishBuildArtifacts@1
+  displayName: "Publish artifacts"
   inputs:
-    pathtoPublish: $(Build.ArtifactStagingDirectory)
-    artifactName: MyBuildOutputs
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)/app'
+    ArtifactName: app
+    publishLocation: Container
