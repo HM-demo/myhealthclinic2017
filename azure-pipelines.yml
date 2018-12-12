@@ -10,7 +10,8 @@ variables:
   buildConfiguration: 'Release'
 
 steps:
-- script: dotnet publish -o dist MHC_ASPNetCore.sln --configuration $(buildConfiguration)
+- script: dotnet build MHC_ASPNetCore.sln --configuration $(buildConfiguration)
+- script: dir
   displayName: 'dotnet publish'
 - task: CopyFiles@2
   inputs:
